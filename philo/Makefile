@@ -6,7 +6,7 @@
 #    By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/28 19:44:31 by lgertrud          #+#    #+#              #
-#    Updated: 2025/08/19 14:12:33 by lgertrud         ###   ########.fr        #
+#    Updated: 2025/09/02 15:51:29 by lgertrud         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,8 @@ I_DIR = includes
 INCLUDES = -I$(I_DIR)
 
 #sources
-SRC = $(SRC_DIR)/main.c $(SRC_DIR)/init_args.c $(SRC_DIR)/utils.c $(SRC_DIR)/functions.c
+SRC = $(SRC_DIR)/main.c $(SRC_DIR)/init_args.c $(SRC_DIR)/functions.c \
+		$(SRC_DIR)/philosophers.c $(SRC_DIR)/monitoring.c
 
 #objects
 OBJS = $(SRC:.c=.o)

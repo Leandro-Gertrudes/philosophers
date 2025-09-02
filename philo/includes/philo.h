@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:44:24 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/08/19 14:46:23 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/02 16:10:57 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,27 +17,54 @@
 # define ERROR_NO_ISDIGIT "Error: Invalid input. Each parameter \
 must be a single positive numeric value.\n"
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
+# include <unistd.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <sys/time.h>
+# include <pthread.h>
 
-typedef struct s_args
+typedef struct s_rules
 {
-	int	philos;
-	int	die;
-	int	eat;
-	int	sleep;
-	int	limit;
-}	t_args;
+	int				num_philos;
+	int				time_to_die;
+	int				time_to_eat;
+	int				time_to_sleep;
+	int				meals_limit;
+	int				someone_died;
+	long			start;
+	pthread_mutex_t	print_lock;
+	pthread_mutex_t	*forks;
+}	t_rules;
+
+typedef struct s_philosopher
+{
+	int		id;
+	long	last_meal;
+	int		count_eat;
+	t_rules	*rules;
+}	t_philosopher;
 
 // Init args
-int		validate_args(int argc, char **argv);
-int		check_caracters(char **arr);
-void	set_args(t_args *args, char **argv);
+int				validate_args(int argc, char **argv);
+int				check_caracters(char **arr);
+void			set_args(t_rules *rules, char **argv);
+t_philosopher	*ft_init_philos(t_rules *rules);
 // support functions
-int		ft_atoi(const char *nptr);
-char	*ft_strtrim(char const *s, char const *set);
-int		ft_isdigit(int c);
-size_t	ft_strlen(const char *str);
+int				ft_atoi(const char *nptr);
+char			*ft_strtrim(char const *s, char const *set);
+int				ft_isdigit(int c);
+size_t			ft_strlen(const char *str);
+long			timestamp_ms(void);
+// Philosophers
+void			ft_philosophers(t_philosopher *philo, t_rules *rules);
+void			*monitor_routine(void *arg);
+void			log_action(t_philosopher *philo,
+					const char *action, t_rules *rules);
+void			*philosopher_routine(void *arg);
+void			*ft_one_philo(t_philosopher *philo, t_rules *rules);
+void			ft_take_forks(t_philosopher *philo, t_rules *rules);
+int				is_finished(t_philosopher *philo, t_rules *rules, int i);
+void			*someone_dead(t_philosopher *philos,
+					t_rules *rules, int i, long now);
 
 #endif

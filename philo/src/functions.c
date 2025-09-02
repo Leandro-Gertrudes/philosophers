@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:01:25 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/08/19 14:08:15 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/02 15:53:04 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,10 +85,10 @@ size_t	ft_strlen(const char *str)
 {
 	int	i;
 
-	if(!str)
+	if (!str)
 		return (0);
 	i = 0;
-	if(str[i])
+	if (str[i])
 		i++;
 	return (i);
 }
