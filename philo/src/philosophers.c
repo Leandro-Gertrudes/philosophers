@@ -6,11 +6,20 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:00:52 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/02 16:16:12 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/03 15:24:27 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+void	advance_time(t_rules *rules, int stop)
+{
+	long	begin;
+
+	begin = timestamp_ms();
+	while (!rules->someone_died && (timestamp_ms() - begin) < stop / 1000)
+		usleep(100);
+}
 
 void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 {
@@ -27,13 +36,14 @@ void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 		i++;
 	}
 	pthread_create(&monitoring, NULL, monitor_routine, philos);
-	j = 0;
-	while (j < rules->num_philos)
-	{
+	j = -1;
+	while (++j < rules->num_philos)
 		pthread_join(threads[j], NULL);
-		j++;
-	}
 	pthread_join(monitoring, NULL);
+	j = -1;
+	while (++j < rules->num_philos)
+        pthread_mutex_destroy(&rules->forks[i]);
+    pthread_mutex_destroy(&rules->print_lock);
 	free(threads);
 }
 
@@ -52,13 +62,12 @@ void	*philosopher_routine(void *arg)
 		ft_take_forks(philo, rules);
 		philo->last_meal = timestamp_ms();
 		log_action(philo, "is eating", rules);
-		usleep(rules->time_to_eat);
+		advance_time(rules, rules->time_to_eat);
+		log_action(philo, "is sleeping", rules);
 		pthread_mutex_unlock(&rules->forks[philo->id - 1]);
 		pthread_mutex_unlock(&rules->forks[philo->id % rules->num_philos]);
-		log_action(philo, "is sleeping", rules);
-		usleep(rules->time_to_sleep);
+		advance_time(rules, rules->time_to_sleep);
 		log_action(philo, "is thiking", rules);
-		usleep(100 * 1000);
 		philo->count_eat++;
 	}
 	return (NULL);
