@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:44:24 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/04 13:09:23 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:12:48 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ must be a single positive numeric value.\n"
 typedef struct s_rules
 {
 	int				num_philos;
-	int				time_to_die;
-	int				time_to_eat;
-	int				time_to_sleep;
+	long long		time_to_die;
+	long long		time_to_eat;
+	long long		time_to_sleep;
 	int				meals_limit;
 	int				someone_died;
 	long			start;
@@ -39,7 +39,7 @@ typedef struct s_rules
 typedef struct s_philosopher
 {
 	int		id;
-	long	last_meal;
+	long long	last_meal;
 	int		count_eat;
 	t_rules	*rules;
 }	t_philosopher;
@@ -63,8 +63,8 @@ void			log_action(t_philosopher *philo,
 void			*philosopher_routine(void *arg);
 void			*ft_one_philo(t_philosopher *philo, t_rules *rules);
 void			ft_take_forks(t_philosopher *philo, t_rules *rules);
-int				is_finished(t_philosopher *philo, t_rules *rules, int i);
+int				is_finished(t_philosopher *philos, t_rules *rules);
 void			*someone_dead(t_philosopher *philos,
 					t_rules *rules, int i, long now);
-void			advance_time(t_rules *rules, int stop);
+int				advance_time(t_rules *rules, int stop);
 #endif

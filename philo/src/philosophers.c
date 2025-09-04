@@ -6,11 +6,13 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:00:52 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/04 13:09:11 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/04 16:13:04 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+void	*unlock_and_return(t_rules *rules, t_philosopher *philo);
 
 void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 {
@@ -33,8 +35,8 @@ void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 	pthread_join(monitoring, NULL);
 	j = -1;
 	while (++j < rules->num_philos)
-        pthread_mutex_destroy(&rules->forks[j]);
-    pthread_mutex_destroy(&rules->print_lock);
+		pthread_mutex_destroy(&rules->forks[j]);
+	pthread_mutex_destroy(&rules->print_lock);
 	free(threads);
 }
 
@@ -53,13 +55,15 @@ void	*philosopher_routine(void *arg)
 		ft_take_forks(philo, rules);
 		philo->last_meal = timestamp_ms();
 		log_action(philo, "is eating", rules);
-		advance_time(rules, rules->time_to_eat);
-		log_action(philo, "is sleeping", rules);
-		pthread_mutex_unlock(&rules->forks[philo->id - 1]);
-		pthread_mutex_unlock(&rules->forks[philo->id % rules->num_philos]);
-		advance_time(rules, rules->time_to_sleep);
-		log_action(philo, "is thiking", rules);
 		philo->count_eat++;
+		if(!advance_time(rules, rules->time_to_eat))
+			return (unlock_and_return(rules, philo));
+		log_action(philo, "is sleeping", rules);
+		pthread_mutex_unlock(&rules->forks[philo->id % rules->num_philos]);
+		pthread_mutex_unlock(&rules->forks[philo->id - 1]);
+		if(!advance_time(rules, rules->time_to_eat))
+			return (NULL);
+		log_action(philo, "is thinking", rules);
 	}
 	return (NULL);
 }
@@ -72,18 +76,32 @@ void	ft_take_forks(t_philosopher *philo, t_rules *rules)
 	left = philo->id - 1;
 	right = (philo->id % rules->num_philos);
 	if (philo->id % 2 == 0)
-	{
-		pthread_mutex_lock(&rules->forks[right]);
-		log_action(philo, "has taken a fork", rules);
-		pthread_mutex_lock(&rules->forks[left]);
-		log_action(philo, "has taken a fork", rules);
-	}
-	else
-	{
-		pthread_mutex_lock(&rules->forks[left]);
-		log_action(philo, "has taken a fork", rules);
-		pthread_mutex_lock(&rules->forks[right]);
-		log_action(philo, "has taken a fork", rules);
+		{
+			if (pthread_mutex_trylock(&rules->forks[right]) == 0)
+			{
+				log_action(philo, "has taken a fork", rules);
+				if (pthread_mutex_trylock(&rules->forks[left]) == 0)
+				{
+					log_action(philo, "has taken a fork", rules);
+					return ; // Pegou ambos os garfos, pode comer
+				}
+				else
+					pthread_mutex_unlock(&rules->forks[right]); // libera direito se não conseguiu esquerdo
+			}
+		}
+		else
+		{
+			if (pthread_mutex_trylock(&rules->forks[left]) == 0)
+			{
+				log_action(philo, "has taken a fork", rules);
+				if (pthread_mutex_trylock(&rules->forks[right]) == 0)
+				{
+					log_action(philo, "has taken a fork", rules);
+					return ; // Pegou ambos os garfos, pode comer
+				}
+				else
+					pthread_mutex_unlock(&rules->forks[left]); // libera esquerdo se não conseguiu direito
+			}
 	}
 }
 
@@ -97,11 +115,10 @@ void	*ft_one_philo(t_philosopher *philo, t_rules *rules)
 	pthread_mutex_unlock(&rules->forks[0]);
 	return (NULL);
 }
-void	advance_time(t_rules *rules, int stop)
-{
-	long	begin;
 
-	begin = timestamp_ms();
-	while (!rules->someone_died && (timestamp_ms() - begin) < stop)
-		usleep(100);
+void	*unlock_and_return(t_rules *rules, t_philosopher *philo)
+{
+	pthread_mutex_unlock(&rules->forks[philo->id - 1]);
+	pthread_mutex_unlock(&rules->forks[philo->id % rules->num_philos]);
+	return (NULL);
 }
