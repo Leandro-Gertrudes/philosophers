@@ -1,0 +1,488 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   functions.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/19 14:01:25 by lgertrud          #+#    #+#             */
+/*   Updated: 2025/09/02 15:53:04 by lgertrud         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "philo.h"
+
+int	ft_atoi(const char *nptr)
+{
+	long	result;	
+	int		i;
+	int		sign;
+
+	i = 0;
+	sign = 1;
+	result = 0;
+	while (nptr[i] == ' ' || nptr[i] == '\t' || nptr[i] == '\n'
+		|| nptr[i] == '\v' || nptr[i] == '\f' || nptr[i] == '\r')
+		i++;
+	if (nptr[i] == '-' || nptr[i] == '+')
+	{
+		if (nptr[i] == '-')
+			sign = -1;
+		i++;
+	}
+	while (nptr[i] >= '0' && nptr[i] <= '9')
+	{
+		result = result * 10 + (nptr[i] - '0');
+		i++;
+	}
+	return ((int)(result * sign));
+}
+
+static int	set_check(char ch, const char *set)
+{
+	while (*set)
+	{
+		if (ch == *set)
+			return (1);
+		set++;
+	}
+	return (0);
+}
+
+char	*ft_strtrim(char const *s, char const *set)
+{
+	size_t	start;
+	size_t	end;
+	char	*res;
+	size_t	i;
+
+	i = 0;
+	start = 0;
+	if (!s || !set)
+		return (NULL);
+	end = ft_strlen(s);
+	while (s[start] && set_check(s[start], set))
+		start++;
+	while (end > start && set_check(s[end - 1], set))
+		end--;
+	res = (char *)malloc(end - start + 1);
+	if (!res)
+		return (NULL);
+	while (start < end)
+		res[i++] = s[start++];
+	res[i] = '\0';
+	return (res);
+}
+
+int	ft_isdigit(int c)
+{
+	if (c >= '0' && c <= '9')
+		return (1);
+	return (0);
+}
+
+size_t	ft_strlen(const char *str)
+{
+	int	i;
+
+	if (!str)
+		return (0);
+	i = 0;
+	if (str[i])
+		i++;
+	return (i);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init_args.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/28 19:58:06 by lgertrud          #+#    #+#             */
+/*   Updated: 2025/09/04 13:08:50 by lgertrud         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "philo.h"
+
+static int	ft_isspace(int c);
+
+int	validate_args(int argc, char **argv)
+{
+	if (argc != 5 && argc != 6)
+	{
+		printf(ERROR_NUM_ARGS);
+		return (0);
+	}
+	if (!check_caracters(argv))
+	{
+		printf(ERROR_NO_ISDIGIT);
+		return (0);
+	}
+	return (1);
+}
+
+int	check_caracters(char **arr)
+{
+	int	i;
+	int	k;
+
+	i = 1;
+	while (arr[i])
+	{
+		k = 0;
+		while (arr[i][k])
+		{
+			if ((!ft_isdigit(arr[i][k]) && !ft_isspace(arr[i][k]))
+					|| !ft_atoi(arr[i]))
+				return (0);
+			k++;
+		}
+		i++;
+	}
+	return (1);
+}
+
+void	set_args(t_rules *rules, char **argv)
+{
+	int	i;
+
+	rules->num_philos = ft_atoi(argv[1]);
+	rules->time_to_die = ft_atoi(argv[2]);
+	rules->time_to_eat = ft_atoi(argv[3]);
+	rules->time_to_sleep = ft_atoi(argv[4]);
+	rules->meals_limit = 0;
+	if (argv[5])
+		rules->meals_limit = ft_atoi(argv[5]);
+	rules->someone_died = 0;
+	rules->forks = malloc(sizeof(pthread_mutex_t) * rules->num_philos);
+	i = 0;
+	while (i < rules->num_philos)
+	{
+		pthread_mutex_init(&rules->forks[i], NULL);
+		i++;
+	}
+	pthread_mutex_init(&rules->print_lock, NULL);
+}
+
+t_philosopher	*ft_init_philos(t_rules *rules)
+{
+	t_philosopher	*philos;
+	int				i;
+
+	philos = malloc(sizeof(t_philosopher) * rules->num_philos);
+	if (!philos)
+		return (NULL);
+	i = 0;
+	rules->start = timestamp_ms();
+	while (i < rules->num_philos)
+	{
+		philos[i].id = i + 1;
+		philos[i].rules = rules;
+		philos[i].last_meal = rules->start;
+		philos[i].count_eat = 0;
+		i++;
+	}
+	return (philos);
+}
+
+int	ft_isspace(int c)
+{
+	if (c == ' ' || c == '\t' || c == '\n'
+		|| c == '\v' || c == '\f' || c == '\r')
+		return (1);
+	return (0);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/28 19:43:07 by lgertrud          #+#    #+#             */
+/*   Updated: 2025/09/04 13:05:24 by lgertrud         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "philo.h"
+
+int	main(int argc, char **argv)
+{
+	t_rules			*rules;
+	t_philosopher	*philos;
+
+	if (!validate_args(argc, argv))
+		return (1);
+	rules = malloc(sizeof(t_rules));
+	set_args(rules, argv);
+	philos = ft_init_philos(rules);
+	if (philos)
+	{
+		ft_philosophers(philos, rules);
+		free(philos);
+	}
+	free(rules->forks);
+	free(rules);
+}
+
+void	log_action(t_philosopher *philo, const char *action, t_rules *rules)
+{
+	pthread_mutex_lock(&philo->rules->print_lock);
+	if (!philo->rules->someone_died)
+		printf("%ld %d %s\n",
+			timestamp_ms() - rules->start, philo->id, action);
+	pthread_mutex_unlock(&philo->rules->print_lock);
+}
+
+long	timestamp_ms(void)
+{
+	struct timeval	tv;
+
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000L + tv.tv_usec / 1000L);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   monitoring.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/30 15:50:13 by lgertrud          #+#    #+#             */
+/*   Updated: 2025/09/04 13:08:27 by lgertrud         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "philo.h"
+
+void	*monitor_routine(void *arg)
+{
+	t_philosopher	*philos;
+	t_rules			*rules;
+	int				i;
+	long			now;
+
+	philos = (t_philosopher *)arg;
+	rules = philos[0].rules;
+	while (!rules->someone_died)
+	{
+		i = -1;
+		while (++i < rules->num_philos)
+		{
+			now = timestamp_ms();
+			if (now - philos[i].last_meal >= rules->time_to_die
+				&& !(rules->meals_limit
+					&& philos[i].count_eat >= rules->meals_limit))
+			{
+				return (someone_dead(philos, rules, i, now));
+			}
+			if (is_finished(philos, rules, i))
+				return (NULL);
+		}
+		//usleep(100);
+	}
+	return (NULL);
+}
+
+void	*someone_dead(t_philosopher *philos, t_rules *rules, int i, long now)
+{
+	pthread_mutex_lock(&rules->print_lock);
+	if (!rules->someone_died)
+		printf("%ld %d died\n", now - rules->start, philos[i].id);
+	rules->someone_died = 1;
+	pthread_mutex_unlock(&rules->print_lock);
+	return (NULL);
+}
+
+int	is_finished(t_philosopher *philos, t_rules *rules, int i)
+{
+	int	finished;
+
+	finished = 1;
+	if (!(rules->meals_limit && philos[i].count_eat >= rules->meals_limit))
+		finished = 0;
+	if (finished)
+	{
+		rules->someone_died = 1;
+	}
+	return (finished);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philosophers.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/02 12:00:52 by lgertrud          #+#    #+#             */
+/*   Updated: 2025/09/04 13:09:11 by lgertrud         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "philo.h"
+
+void	ft_philosophers(t_philosopher *philos, t_rules *rules)
+{
+	pthread_t	*threads;
+	pthread_t	monitoring;
+	int			i;
+	int			j;
+
+	threads = malloc(sizeof(pthread_t) * rules->num_philos);
+	i = 0;
+	while (i < rules->num_philos)
+	{
+		pthread_create(&threads[i], NULL, philosopher_routine, &philos[i]);
+		i++;
+	}
+	pthread_create(&monitoring, NULL, monitor_routine, philos);
+	j = -1;
+	while (++j < rules->num_philos)
+		pthread_join(threads[j], NULL);
+	pthread_join(monitoring, NULL);
+	j = -1;
+	while (++j < rules->num_philos)
+        pthread_mutex_destroy(&rules->forks[j]);
+    pthread_mutex_destroy(&rules->print_lock);
+	free(threads);
+}
+
+void	*philosopher_routine(void *arg)
+{
+	t_philosopher	*philo;
+	t_rules			*rules;
+
+	philo = (t_philosopher *)arg;
+	rules = philo->rules;
+	if (rules->num_philos == 1)
+		return (ft_one_philo(philo, rules));
+	while (!rules->someone_died
+		&& !(rules->meals_limit && philo->count_eat == rules->meals_limit))
+	{
+		ft_take_forks(philo, rules);
+		philo->last_meal = timestamp_ms();
+		log_action(philo, "is eating", rules);
+		advance_time(rules, rules->time_to_eat);
+		log_action(philo, "is sleeping", rules);
+		pthread_mutex_unlock(&rules->forks[philo->id - 1]);
+		pthread_mutex_unlock(&rules->forks[philo->id % rules->num_philos]);
+		advance_time(rules, rules->time_to_sleep);
+		log_action(philo, "is thiking", rules);
+		philo->count_eat++;
+	}
+	return (NULL);
+}
+
+void	ft_take_forks(t_philosopher *philo, t_rules *rules)
+{
+	int	left;
+	int	right;
+
+	left = philo->id - 1;
+	right = (philo->id % rules->num_philos);
+	if (philo->id % 2 == 0)
+	{
+		pthread_mutex_lock(&rules->forks[right]);
+		log_action(philo, "has taken a fork", rules);
+		pthread_mutex_lock(&rules->forks[left]);
+		log_action(philo, "has taken a fork", rules);
+	}
+	else
+	{
+		pthread_mutex_lock(&rules->forks[left]);
+		log_action(philo, "has taken a fork", rules);
+		pthread_mutex_lock(&rules->forks[right]);
+		log_action(philo, "has taken a fork", rules);
+	}
+}
+
+void	*ft_one_philo(t_philosopher *philo, t_rules *rules)
+{
+	pthread_mutex_lock(&rules->forks[0]);
+	log_action(philo, "has taken a fork", rules);
+	usleep(rules->time_to_die);
+	log_action(philo, "died", rules);
+	rules->someone_died = 1;
+	pthread_mutex_unlock(&rules->forks[0]);
+	return (NULL);
+}
+void	advance_time(t_rules *rules, int stop)
+{
+	long	begin;
+
+	begin = timestamp_ms();
+	while (!rules->someone_died && (timestamp_ms() - begin) < stop)
+		usleep(100);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/28 19:44:24 by lgertrud          #+#    #+#             */
+/*   Updated: 2025/09/04 13:09:23 by lgertrud         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef PHILO_H
+# define PHILO_H
+# define ERROR_NUM_ARGS "Usage: number_of_philosophers time_to_die time_to_eat time_to_sleep \
+[number_of_times_each_philosopher_must_eat]\n"
+# define ERROR_NO_ISDIGIT "Error: Invalid input. Each parameter \
+must be a single positive numeric value.\n"
+
+# include <unistd.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <sys/time.h>
+# include <pthread.h>
+
+typedef struct s_rules
+{
+	int				num_philos;
+	int				time_to_die;
+	int				time_to_eat;
+	int				time_to_sleep;
+	int				meals_limit;
+	int				someone_died;
+	long			start;
+	pthread_mutex_t	print_lock;
+	pthread_mutex_t	*forks;
+}	t_rules;
+
+typedef struct s_philosopher
+{
+	int		id;
+	long	last_meal;
+	int		count_eat;
+	t_rules	*rules;
+}	t_philosopher;
+
+// Init args
+int				validate_args(int argc, char **argv);
+int				check_caracters(char **arr);
+void			set_args(t_rules *rules, char **argv);
+t_philosopher	*ft_init_philos(t_rules *rules);
+// support functions
+int				ft_atoi(const char *nptr);
+char			*ft_strtrim(char const *s, char const *set);
+int				ft_isdigit(int c);
+size_t			ft_strlen(const char *str);
+long			timestamp_ms(void);
+// Philosophers
+void			ft_philosophers(t_philosopher *philo, t_rules *rules);
+void			*monitor_routine(void *arg);
+void			log_action(t_philosopher *philo,
+					const char *action, t_rules *rules);
+void			*philosopher_routine(void *arg);
+void			*ft_one_philo(t_philosopher *philo, t_rules *rules);
+void			ft_take_forks(t_philosopher *philo, t_rules *rules);
+int				is_finished(t_philosopher *philo, t_rules *rules, int i);
+void			*someone_dead(t_philosopher *philos,
+					t_rules *rules, int i, long now);
+void			advance_time(t_rules *rules, int stop);
+#endif

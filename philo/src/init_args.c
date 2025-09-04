@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:58:06 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/03 12:23:28 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:08:50 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,9 +55,9 @@ void	set_args(t_rules *rules, char **argv)
 	int	i;
 
 	rules->num_philos = ft_atoi(argv[1]);
-	rules->time_to_die = ft_atoi(argv[2]) * 1000;
-	rules->time_to_eat = ft_atoi(argv[3]) * 1000;
-	rules->time_to_sleep = ft_atoi(argv[4]) * 1000;
+	rules->time_to_die = ft_atoi(argv[2]);
+	rules->time_to_eat = ft_atoi(argv[3]);
+	rules->time_to_sleep = ft_atoi(argv[4]);
 	rules->meals_limit = 0;
 	if (argv[5])
 		rules->meals_limit = ft_atoi(argv[5]);

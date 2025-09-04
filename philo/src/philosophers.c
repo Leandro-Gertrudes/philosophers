@@ -6,20 +6,11 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:00:52 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/03 15:24:27 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:09:11 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-void	advance_time(t_rules *rules, int stop)
-{
-	long	begin;
-
-	begin = timestamp_ms();
-	while (!rules->someone_died && (timestamp_ms() - begin) < stop / 1000)
-		usleep(100);
-}
 
 void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 {
@@ -42,7 +33,7 @@ void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 	pthread_join(monitoring, NULL);
 	j = -1;
 	while (++j < rules->num_philos)
-        pthread_mutex_destroy(&rules->forks[i]);
+        pthread_mutex_destroy(&rules->forks[j]);
     pthread_mutex_destroy(&rules->print_lock);
 	free(threads);
 }
@@ -105,4 +96,12 @@ void	*ft_one_philo(t_philosopher *philo, t_rules *rules)
 	rules->someone_died = 1;
 	pthread_mutex_unlock(&rules->forks[0]);
 	return (NULL);
+}
+void	advance_time(t_rules *rules, int stop)
+{
+	long	begin;
+
+	begin = timestamp_ms();
+	while (!rules->someone_died && (timestamp_ms() - begin) < stop)
+		usleep(100);
 }

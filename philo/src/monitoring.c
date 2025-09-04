@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 15:50:13 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/03 14:16:04 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:08:27 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	*monitor_routine(void *arg)
 		while (++i < rules->num_philos)
 		{
 			now = timestamp_ms();
-			if (now - philos[i].last_meal >= rules->time_to_die / 1000
+			if (now - philos[i].last_meal >= rules->time_to_die
 				&& !(rules->meals_limit
 					&& philos[i].count_eat >= rules->meals_limit))
 			{
@@ -36,7 +36,7 @@ void	*monitor_routine(void *arg)
 			if (is_finished(philos, rules, i))
 				return (NULL);
 		}
-		usleep(100);
+		//usleep(100);
 	}
 	return (NULL);
 }
