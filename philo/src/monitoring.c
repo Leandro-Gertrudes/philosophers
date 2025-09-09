@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 15:50:13 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 15:00:33 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 15:20:53 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void	*someone_dead(t_philosopher *philos, t_rules *rules, int i, long now)
 {
 	pthread_mutex_lock(&rules->death_lock);
 	if (!rules->someone_died)
-		printf("%4ld %3d %s\n", now - rules->start, philos[i].id, "died");
+		printf("%3ld %3d %s\n", now - rules->start, philos[i].id, "died");
 	rules->someone_died = 1;
 	pthread_mutex_unlock(&rules->death_lock);
 	pthread_mutex_unlock(&philos[i].eat_lock);
