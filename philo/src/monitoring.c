@@ -6,11 +6,13 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 15:50:13 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 13:27:03 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 15:00:33 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+static int	check_died(t_rules *rules);
 
 void	*monitor_routine(void *arg)
 {
@@ -21,15 +23,8 @@ void	*monitor_routine(void *arg)
 
 	philos = (t_philosopher *)arg;
 	rules = philos[0].rules;
-	while (1)
+	while (!check_died(rules))
 	{
-		pthread_mutex_lock(&rules->death_lock);
-		if (rules->someone_died)
-		{
-			pthread_mutex_unlock(&rules->death_lock);
-			break;
-		}
-	    pthread_mutex_unlock(&rules->death_lock);
 		i = -1;
 		while (++i < rules->num_philos)
 		{
@@ -38,9 +33,7 @@ void	*monitor_routine(void *arg)
 			if (now - philos[i].last_meal > rules->time_to_die
 				&& !(rules->meals_limit
 					&& philos[i].count_eat >= rules->meals_limit))
-			{
 				return (someone_dead(philos, rules, i, now));
-			}
 			pthread_mutex_unlock(&philos[i].eat_lock);
 		}
 		if (is_finished(philos, rules))
@@ -83,4 +76,16 @@ int	is_finished(t_philosopher *philos, t_rules *rules)
 		pthread_mutex_unlock(&rules->death_lock);
 	}
 	return (finished);
+}
+
+int	check_died(t_rules *rules)
+{
+	pthread_mutex_lock(&rules->death_lock);
+	if (rules->someone_died == 1)
+	{
+		pthread_mutex_unlock(&rules->death_lock);
+		return (1);
+	}
+	pthread_mutex_unlock(&rules->death_lock);
+	return (0);
 }

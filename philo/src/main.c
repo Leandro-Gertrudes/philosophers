@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:43:07 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 13:21:53 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:22:40 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ int	main(int argc, char **argv)
 		ft_philosophers(philos, rules);
 		free(philos);
 	}
+	pthread_mutex_destroy(&rules->print_lock);
+	pthread_mutex_destroy(&rules->death_lock);
 	free(rules->forks);
 	free(rules);
 }
@@ -50,25 +52,36 @@ long	timestamp_ms(void)
 	return (tv.tv_sec * 1000L + tv.tv_usec / 1000L);
 }
 
-int advance_time(t_rules *rules, int stop)
+int	advance_time(t_rules *rules, int stop)
 {
-    long	begin;
+	long	begin;
 
-    begin = timestamp_ms();
-    while (1)
-    {
-        pthread_mutex_lock(&rules->death_lock);
-        if (rules->someone_died)
-        {
-            pthread_mutex_unlock(&rules->death_lock);
-            return (0);
-        }
-        pthread_mutex_unlock(&rules->death_lock);
+	begin = timestamp_ms();
+	while (1)
+	{
+		pthread_mutex_lock(&rules->death_lock);
+		if (rules->someone_died)
+		{
+			pthread_mutex_unlock(&rules->death_lock);
+			return (0);
+		}
+		pthread_mutex_unlock(&rules->death_lock);
+		if ((timestamp_ms() - begin) >= stop)
+			break ;
+		usleep(100);
+	}
+	return (1);
+}
 
-        if ((timestamp_ms() - begin) >= stop)
-            break;
-
-        usleep(100);
-    }
-    return (1);
+int	check_someone_died(t_philosopher *philo, t_rules *rules)
+{
+	pthread_mutex_lock(&rules->death_lock);
+	if (rules->someone_died
+		|| (rules->meals_limit && philo->count_eat == rules->meals_limit))
+	{
+		pthread_mutex_unlock(&rules->death_lock);
+		return (1);
+	}
+	pthread_mutex_unlock(&rules->death_lock);
+	return (0);
 }

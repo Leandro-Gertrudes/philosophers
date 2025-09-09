@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:00:52 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 13:18:51 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:23:01 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,6 @@ void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 		pthread_mutex_destroy(&rules->forks[j]);
 		pthread_mutex_destroy(&philos[j].eat_lock);
 	}
-	pthread_mutex_destroy(&rules->print_lock);
-	pthread_mutex_destroy(&rules->death_lock);
 	free(threads);
 }
 
@@ -53,14 +51,8 @@ void	*philosopher_routine(void *arg)
 		return (ft_one_philo(philo, rules));
 	while (1)
 	{
-		pthread_mutex_lock(&rules->death_lock);
-		if(rules->someone_died
-		|| (rules->meals_limit && philo->count_eat == rules->meals_limit))
-		{
-			pthread_mutex_unlock(&rules->death_lock);
+		if (check_someone_died(philo, rules))
 			return (NULL);
-		}
-		pthread_mutex_unlock(&rules->death_lock);
 		ft_take_forks(philo, rules);
 		if (!advance_time(rules, rules->time_to_eat))
 			return (unlock_and_return(rules, philo));
