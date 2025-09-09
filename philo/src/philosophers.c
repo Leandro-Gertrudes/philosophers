@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:00:52 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 14:23:01 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 15:16:26 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,8 @@ void	*philosopher_routine(void *arg)
 			return (NULL);
 		log_action(philo, "is thinking", rules);
 		if (rules->num_philos % 2 != 0)
-			advance_time(rules, rules->time_to_eat);
+			if(!advance_time(rules, rules->time_to_eat))
+				return (NULL);
 	}
 	return (NULL);
 }
