@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:44:24 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/04 15:12:48 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 10:43:49 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,10 @@ typedef struct s_rules
 
 typedef struct s_philosopher
 {
-	int		id;
+	int			id;
 	long long	last_meal;
-	int		count_eat;
-	t_rules	*rules;
+	int			count_eat;
+	t_rules		*rules;
 }	t_philosopher;
 
 // Init args

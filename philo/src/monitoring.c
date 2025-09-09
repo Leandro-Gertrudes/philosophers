@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 15:50:13 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/04 15:26:56 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 10:44:15 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void	*someone_dead(t_philosopher *philos, t_rules *rules, int i, long now)
 {
 	pthread_mutex_lock(&rules->print_lock);
 	if (!rules->someone_died)
-		printf("%4ld %3d died\n", now - rules->start, philos[i].id);
+		printf("%ld %d died\n", now - rules->start, philos[i].id);
 	rules->someone_died = 1;
 	pthread_mutex_unlock(&rules->print_lock);
 	return (NULL);
@@ -58,7 +58,7 @@ int	is_finished(t_philosopher *philos, t_rules *rules)
 
 	i = 0;
 	finished = 1;
-	while(i < rules->num_philos)
+	while (i < rules->num_philos)
 	{
 		if (!(rules->meals_limit && philos[i].count_eat >= rules->meals_limit))
 			finished = 0;
