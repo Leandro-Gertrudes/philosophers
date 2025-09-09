@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:43:07 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/04 14:46:33 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 10:50:28 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,7 @@ int	advance_time(t_rules *rules, int stop)
 	begin = timestamp_ms();
 	while (!rules->someone_died && (timestamp_ms() - begin) < stop)
 		usleep(100);
-	if(rules->someone_died)
+	if (rules->someone_died)
 		return (0);
 	return (1);
 }
-

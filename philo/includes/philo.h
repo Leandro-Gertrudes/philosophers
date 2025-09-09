@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:44:24 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 10:43:49 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 10:54:21 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,4 +67,5 @@ int				is_finished(t_philosopher *philos, t_rules *rules);
 void			*someone_dead(t_philosopher *philos,
 					t_rules *rules, int i, long now);
 int				advance_time(t_rules *rules, int stop);
+void			*unlock_and_return(t_rules *rules, t_philosopher *philo);
 #endif

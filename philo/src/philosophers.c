@@ -6,13 +6,11 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:00:52 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 10:43:45 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 12:14:45 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-void	*unlock_and_return(t_rules *rules, t_philosopher *philo);
 
 void	ft_philosophers(t_philosopher *philos, t_rules *rules)
 {
@@ -53,14 +51,12 @@ void	*philosopher_routine(void *arg)
 		&& !(rules->meals_limit && philo->count_eat == rules->meals_limit))
 	{
 		ft_take_forks(philo, rules);
-		log_action(philo, "is eating", rules);
-		philo->count_eat++;
 		if (!advance_time(rules, rules->time_to_eat))
 			return (unlock_and_return(rules, philo));
 		log_action(philo, "is sleeping", rules);
 		pthread_mutex_unlock(&rules->forks[philo->id % rules->num_philos]);
 		pthread_mutex_unlock(&rules->forks[philo->id - 1]);
-		if (!advance_time(rules, rules->time_to_eat))
+		if (!advance_time(rules, rules->time_to_sleep))
 			return (NULL);
 		log_action(philo, "is thinking", rules);
 		if (rules->num_philos % 2 != 0)
@@ -90,7 +86,9 @@ void	ft_take_forks(t_philosopher *philo, t_rules *rules)
 		pthread_mutex_lock(&rules->forks[right]);
 		log_action(philo, "has taken a fork", rules);
 	}
+	philo->count_eat++;
 	philo->last_meal = timestamp_ms();
+	log_action(philo, "is eating", rules);
 }
 
 void	*ft_one_philo(t_philosopher *philo, t_rules *rules)
