@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:43:07 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 10:50:28 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 13:21:53 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,11 @@ int	main(int argc, char **argv)
 void	log_action(t_philosopher *philo, const char *action, t_rules *rules)
 {
 	pthread_mutex_lock(&philo->rules->print_lock);
+	pthread_mutex_lock(&rules->death_lock);
 	if (!philo->rules->someone_died)
 		printf("%4ld %3d %s\n",
 			timestamp_ms() - rules->start, philo->id, action);
+	pthread_mutex_unlock(&rules->death_lock);
 	pthread_mutex_unlock(&philo->rules->print_lock);
 }
 
@@ -48,14 +50,25 @@ long	timestamp_ms(void)
 	return (tv.tv_sec * 1000L + tv.tv_usec / 1000L);
 }
 
-int	advance_time(t_rules *rules, int stop)
+int advance_time(t_rules *rules, int stop)
 {
-	long	begin;
+    long	begin;
 
-	begin = timestamp_ms();
-	while (!rules->someone_died && (timestamp_ms() - begin) < stop)
-		usleep(100);
-	if (rules->someone_died)
-		return (0);
-	return (1);
+    begin = timestamp_ms();
+    while (1)
+    {
+        pthread_mutex_lock(&rules->death_lock);
+        if (rules->someone_died)
+        {
+            pthread_mutex_unlock(&rules->death_lock);
+            return (0);
+        }
+        pthread_mutex_unlock(&rules->death_lock);
+
+        if ((timestamp_ms() - begin) >= stop)
+            break;
+
+        usleep(100);
+    }
+    return (1);
 }

@@ -6,7 +6,7 @@
 /*   By: lgertrud <lgertrud@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 19:58:06 by lgertrud          #+#    #+#             */
-/*   Updated: 2025/09/09 10:43:57 by lgertrud         ###   ########.fr       */
+/*   Updated: 2025/09/09 12:55:43 by lgertrud         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ void	set_args(t_rules *rules, char **argv)
 		i++;
 	}
 	pthread_mutex_init(&rules->print_lock, NULL);
+	pthread_mutex_init(&rules->death_lock, NULL);
 }
 
 t_philosopher	*ft_init_philos(t_rules *rules)
@@ -88,6 +89,7 @@ t_philosopher	*ft_init_philos(t_rules *rules)
 		philos[i].rules = rules;
 		philos[i].last_meal = rules->start;
 		philos[i].count_eat = 0;
+		pthread_mutex_init(&philos[i].eat_lock, NULL);
 		i++;
 	}
 	return (philos);
